@@ -1,0 +1,69 @@
+# Versión del formato de la plantilla.
+AWSTemplateFormatVersion: 2010-09-09
+
+# Descripción de la plantilla.
+Description: Plantilla para lanzar una instancia EC2 y habilitar SSH
+
+# Parámetros que el usuario debe proporcionar al lanzar la plantilla.
+Parameters: 
+  # Nombre del parámetro KeyName, que representa el nombre del par de llaves SSH.
+  KeyName:
+    # Descripción del parámetro KeyName.
+    Description: Nombre del SSH KeyPair
+    # Tipo del parámetro, que debe ser un nombre de par de llaves SSH de EC2 existente.
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    # Descripción de la restricción para el parámetro KeyName.
+    ConstraintDescription: Provide the name of an existing SSH key pair
+
+# Recursos que se crearán en AWS.
+Resources:
+  # Recurso de instancia EC2 llamado MyEC2Instance.
+  MyEC2Instance:
+    # Tipo del recurso, en este caso una instancia EC2.
+    Type: 'AWS::EC2::Instance'
+    # Propiedades de la instancia EC2.
+    Properties:
+      # Tipo de la instancia EC2.
+      InstanceType: t2.micro
+      # ID de la imagen AMI que se usará para lanzar la instancia 
+      ImageId: ami-033fabdd332044f06
+      # Nombre del par de llaves SSH que se usará para acceder a la instancia, referenciado desde el parámetro KeyName.
+      KeyName: !Ref KeyName
+      # Grupos de seguridad asociados a la instancia, referenciando el recurso InstanceSecurityGroup.
+      SecurityGroups:
+        - !Ref InstanceSecurityGroup
+      # Etiquetas asignadas a la instancia EC2.
+      Tags:
+        # Etiqueta con la clave 'Name' y el valor 'Lab15'.
+        - Key: Name
+          Value: Lab15
+
+  # Recurso de grupo de seguridad llamado InstanceSecurityGroup.
+  InstanceSecurityGroup:
+    # Tipo del recurso, en este caso un grupo de seguridad de EC2.
+    Type: 'AWS::EC2::SecurityGroup'
+    # Propiedades del grupo de seguridad.
+    Properties:
+      # Nombre del grupo de seguridad.
+      GroupName: DMZSecurityGroup
+      # Descripción del grupo de seguridad.
+      GroupDescription: Habilitar acceso SSH  via puerto 22
+      # Reglas de ingreso del grupo de seguridad.
+      SecurityGroupIngress:
+        # Protocolo IP permitido, en este caso TCP.
+        IpProtocol: tcp
+        # Puerto de inicio permitido, en este caso el puerto 22.
+        FromPort: 22
+        # Puerto de fin permitido, en este caso el puerto 22.
+        ToPort: 22
+        # Rango de direcciones IP permitidas, en este caso cualquier dirección IP (0.0.0.0/0).
+        CidrIp: 0.0.0.0/0
+
+# Salidas de la plantilla.
+Outputs: 
+  # Salida llamada InstanceID.
+  InstanceID:
+    # Descripción de la salida InstanceID.
+    Description: Instance ID
+    # Valor de la salida, referenciando el ID de la instancia EC2 creada.
+    Value: !Ref MyEC2Instance
