@@ -24,7 +24,7 @@ Resources:
     # Propiedades de la instancia EC2.
     Properties:
       # Tipo de la instancia EC2.
-      InstanceType: t2.micro
+      InstanceType: t1.micro
       # ID de la imagen AMI que se usará para lanzar la instancia 
       ImageId: ami-033fabdd332044f06
       # Nombre del par de llaves SSH que se usará para acceder a la instancia, referenciado desde el parámetro KeyName.
