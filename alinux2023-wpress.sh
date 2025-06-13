@@ -1,13 +1,22 @@
 #!/bin/bash -ex
-# This script is for Amazon Linux 2 or Amazon Linux 2023
-# It installs a full LAMP stack with WordPress
+# Script para instalar WordPress + phpMyAdmin en Amazon Linux 2/2023
 
-# Update all system packages
+# --- PERSONALIZA TU CONFIGURACIÓN AQUÍ ---
+# ADVERTENCIA: Usar contraseñas fijas es un riesgo de seguridad.
+# Se recomienda solo para entornos de prueba o desarrollo.
+
+DB_NAME="dbwordpress"
+DB_USER="admin"
+DB_PASS="Tecsup00--"
+
+# --- FIN DE LA ZONA DE PERSONALIZACIÓN ---
+
+
+# --- Instalación de la Pila de Software ---
+# Actualizar todos los paquetes del sistema
 yum update -y
 
-# Install Apache, MySQL Community Server 8, and PHP with required modules
-# The mysql-community-server package is available in the default repos for AL2023.
-# For AL2, we need to add the repository first. This block handles both cases.
+# Instalar Apache, MySQL Community Server 8 y PHP con los módulos necesarios
 if ! rpm -q mysql-community-server; then
     if cat /etc/os-release | grep -q "Amazon Linux 2"; then
         wget https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
@@ -17,35 +26,36 @@ if ! rpm -q mysql-community-server; then
 fi
 yum install -y httpd mysql-community-server php php-mysqlnd php-gd php-xml php-mbstring
 
-# Start and enable Apache and MySQL services
+# Habilitar el repositorio EPEL para instalar phpMyAdmin
+if cat /etc/os-release | grep -q "Amazon Linux 2023"; then
+    dnf install -y epel-release
+else
+    amazon-linux-extras install epel -y
+fi
+yum install -y phpmyadmin
+
+
+# --- Configuración de la Base de Datos ---
+# Iniciar y habilitar servicios
 systemctl start httpd
 systemctl enable httpd
 systemctl start mysqld
 systemctl enable mysqld
 
-# --- Database Configuration ---
-# Generate a secure, random password for the database user.
-# Using a fixed password in a script is a security risk.
-DB_USER="wordpress_user"
-DB_NAME="wordpress_db"
-# This creates a strong password and removes characters that can break configs
-DB_PASSWORD=$(openssl rand -base64 12 | tr -d "=+/" | cut -c1-12)
-
-# Get the temporary root password MySQL generates on first startup
+# Obtener la contraseña temporal de root de MySQL
 TEMP_ROOT_PASSWORD=$(grep 'temporary password' /var/log/mysqld.log | sed 's/.*root@localhost: //')
 
-# Use the temporary password to automate the database and user creation.
-# This single command block changes the root password and sets up the WP database.
+# Automatizar la configuración de la base de datos usando las variables personalizadas
 mysql -u root --password="$TEMP_ROOT_PASSWORD" --connect-expired-password <<EOF
-ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASSWORD}Root!1';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASS}';
 CREATE DATABASE ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
 FLUSH PRIVILEGES;
 EOF
 
-# --- WordPress Installation and Configuration ---
-# Download the latest WordPress package to the web server root
+
+# --- Instalación y Configuración de WordPress ---
 cd /var/www/html
 wget https://wordpress.org/latest.tar.gz
 tar -xzf latest.tar.gz
@@ -53,24 +63,29 @@ mv wordpress/* .
 rmdir wordpress
 rm latest.tar.gz
 
-# Create the wp-config.php file from the sample
+# Crear y configurar wp-config.php con las variables personalizadas
 cp wp-config-sample.php wp-config.php
-
-# Use sed to insert the database credentials into wp-config.php
 sed -i "s/database_name_here/$DB_NAME/" wp-config.php
 sed -i "s/username_here/$DB_USER/" wp-config.php
-sed -i "s/password_here/$DB_PASSWORD/" wp-config.php
+sed -i "s/password_here/$DB_PASS/" wp-config.php
 
-# Insert unique security keys and salts from the WordPress.org API
+# Insertar claves de seguridad únicas de la API de WordPress.org
 SALT=$(curl -L https://api.wordpress.org/secret-key/1.1/salt/)
 STRING='put your unique phrase here'
 printf '%s\n' "g/$STRING/d" a "$SALT" . w | ed -s wp-config.php
 
-# --- Final Permissions and Cleanup ---
-# Set the correct ownership and permissions for the WordPress files
+
+# --- Configuración de phpMyAdmin ---
+# Permitir el acceso a phpMyAdmin desde cualquier dirección IP
+sed -i 's/Require ip 127.0.0.1/Require all granted/' /etc/httpd/conf.d/phpMyAdmin.conf
+sed -i 's/Require ip ::1/ /' /etc/httpd/conf.d/phpMyAdmin.conf
+
+
+# --- Permisos Finales y Reinicio ---
+# Establecer propietario y permisos correctos para los archivos web
 chown -R apache:apache /var/www/html/
 find /var/www/html/ -type d -exec chmod 755 {} \;
 find /var/www/html/ -type f -exec chmod 644 {} \;
 
-# Restart Apache to apply all changes
+# Reiniciar Apache para que todos los cambios surtan efecto
 systemctl restart httpd
