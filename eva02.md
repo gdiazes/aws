@@ -67,8 +67,3 @@ Esta es la parte más importante para la conexión. Crearemos dos grupos de segu
     ```bash
     mysql -h [endpoint-de-tu-rds] -u [tu-usuario] -p
     ```
-4.  ¡Debería funcionar! La EC2, al estar en `sg-webapp`, tiene permiso para acceder a la RDS en el puerto 3306.
-
-**Prueba de Seguridad:** Si intentas realizar este mismo comando `mysql` desde tu ordenador local, **fallará**. Esto demuestra que la base de datos está correctamente aislada y protegida de Internet.
-
-Este caso práctico demuestra una arquitectura robusta, segura y escalable, que es el estándar de la industria para desplegar aplicaciones en AWS. ¡Si tienes alguna duda sobre algún paso, no dudes en preguntar
