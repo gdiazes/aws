@@ -27,7 +27,7 @@ Se procede al lanzamiento de dos nodos que actuarán como servidores web:
 1. En la sección de **Instancias**, se selecciona **Launch Instances**.
 2. **Nombre de la instancia:** Se define como `App-Server-Node`.
 3. **Cantidad:** Se especifica el número **2** en el campo de "Number of instances".
-4. **Imagen (AMI):** Se selecciona **Amazon Linux 2023**.
+4. **Imagen (AMI):** Se selecciona **Ubuntu**.
 5. **Tipo de Instancia:** Se elige `t2.micro` (apta para la capa gratuita).
 6. **Key Pair:** Se marca la opción "Proceed without a key pair", ya que el acceso SSH no es requerido para este ejercicio.
 7. **Configuración de Red:**
