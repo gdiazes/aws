@@ -52,6 +52,29 @@ echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 2.  Es creada una base de datos denominada `db_wordpress_prod`.
 3.  Es generado un usuario de base de datos llamado `user_admin_wp` con una contraseña robusta.
 4.  Son concedidos todos los privilegios sobre la base de datos creada al nuevo usuario para permitir la persistencia de datos del CMS.
+ ```bash
+sudo systemctl start mariadb
+```
+```bash
+sudo mysql_secure_installation
+```
+```bash
+Y
+```
+```bash
+sudo systemctl enable mariadb
+```
+```bash
+sudo yum install php-mbstring php-xml -y
+```
+```bash
+sudo systemctl restart httpd
+```
+```bash
+sudo systemctl restart php-fpm```
+```
+
+
 
 ### Fase IV: Despliegue de la Aplicación WordPress
 1.  El paquete de instalación de **WordPress** es descargado desde su fuente oficial y extraído en el directorio raíz del servidor web (`/var/www/html/`).
