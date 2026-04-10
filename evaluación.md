@@ -71,7 +71,7 @@ sudo yum install php-mbstring php-xml -y
 sudo systemctl restart httpd
 ```
 ```bash
-sudo systemctl restart php-fpm```
+sudo systemctl restart php-fpm
 ```
 
 
