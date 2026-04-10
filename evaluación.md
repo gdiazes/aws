@@ -33,7 +33,7 @@ La organización sin fines de lucro **"Digital Connect"** requiere establecer un
 4.  **Instalación del Motor de Base de Datos:** Se procede con la instalación de **MariaDB**. Una vez activo, es ejecutado el script de seguridad para definir la contraseña del usuario raíz y remover privilegios de acceso anónimo.
 5.  **Instalación de Lenguaje de Scripting:** Es instalado **PHP** junto con las extensiones necesarias para la comunicación con bases de datos y el procesamiento de gráficos requeridos por el CMS.
 
-'
+ ```bash
 sudo yum update -y
 sudo dnf install -y mariadb105-server php php-mysqlnd httpd
 sudo systemctl start httpd
@@ -44,7 +44,7 @@ sudo chown -R ec2-user:apache /var/www
 sudo chmod 2775 /var/www && find /var/www -type d -exec sudo chmod 2775 {} \;
 find /var/www -type f -exec sudo chmod 0664 {} \;
 echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
-'
+```
 
 
 ### Fase III: Configuración de la Base de Datos
